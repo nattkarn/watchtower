@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛡️ Watchtower
 
-## Getting Started
+> **A smart and lightweight URL monitoring tool with built-in SSL tracking and instant notifications.**  
+> *Keep watch. Stay ahead.*
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Watchtower** is a fullstack web application designed to monitor the health and security of your web services.  
+It provides real-time status checks, SSL expiry tracking, automated alerts, and exportable reports — all managed through a simple, clean dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧰 Tech Stack
 
-## Learn More
+| Layer       | Technology            |
+|-------------|------------------------|
+| Frontend    | [Next.js 14](https://nextjs.org/) (App Router, TypeScript) |
+| Backend     | [NestJS](https://nestjs.com/) () |
+| Database    | [PostgreSQL on Neon](https://neon.tech/) |
+| ORM         | [Prisma](https://www.prisma.io/) |
+| Notification| Email (Nodemailer) |
+| Auth        | JWT + Bcrypt |
+| Deployment  | - |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ✨ Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- ✅ Monitor HTTP status of any URL
+- ✅ Track SSL certificate expiry (with warning threshold)
+- ✅ Simple dashboard for viewing and managing all monitored URLs
+- ✅ Email notifications when services go down or SSL is near expiry
+- ✅ Export reports (CSV / PDF)
+- ✅ Authenticated access for personal use
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Getting Started
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📅 Roadmap
+
+- [x] Project Initialization
+- [ ] Core Setup: Auth, DB, Prisma
+- [ ] URL Monitor + SSL Checker
+- [ ] Notification system
+- [ ] Export feature
+- [ ] UI/UX polish and deploy
