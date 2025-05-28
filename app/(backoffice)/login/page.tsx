@@ -1,44 +1,52 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Swal from 'sweetalert2';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import { config } from "../../config";
+import axios from "axios";
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('watchtower_user_token');
+    const token = localStorage.getItem("watchtower_user_token");
     if (token) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      Swal.fire('กรอกข้อมูลให้ครบ', '', 'warning');
+      Swal.fire("กรอกข้อมูลให้ครบ", "", "warning");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // MOCK API (จำลองว่าล็อกอินสำเร็จ)
-      if (username === 'admin' && password === '1234') {
-        const fakeToken = 'mock-token-123';
-        localStorage.setItem('watchtower_user_token', fakeToken);
-        localStorage.setItem('watchtower_user_name', username);
-        router.push('/dashboard');
+      const payload = {
+        username,
+        password,
+      };
+      const response = await axios.post(
+        `${config.apiUrl}/api/auth/login`,
+        payload
+      );
+      if (response.data.token !== undefined) {
+        const token = response.data.token;
+        localStorage.setItem("watchtower_user_token", token);
+        localStorage.setItem("watchtower_user_name", username);
+        router.push("/dashboard");
       } else {
-        Swal.fire('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', '', 'error');
+        Swal.fire("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "", "error");
       }
     } catch (error) {
-      Swal.fire('เกิดข้อผิดพลาด', '', 'error');
+      Swal.fire("เกิดข้อผิดพลาด", "", "error");
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +90,7 @@ export default function Login() {
           <button
             type="submit"
             className={`btn-primary w-full flex justify-center items-center ${
-              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={isLoading}
           >
