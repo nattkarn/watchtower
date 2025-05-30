@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import { config } from "../../app/config";
 
 export default function TopNav() {
   const [name, setName] = useState("");
@@ -33,6 +35,14 @@ export default function TopNav() {
 
     if (result.isConfirmed) {
       localStorage.clear();
+      
+      document.cookie = "watchtower_user_level=; max-age=0; path=/";
+      document.cookie = "watchtower_user_name=; max-age=0; path=/";
+      document.cookie = "watchtower_user_token=; max-age=0; path=/";
+      await axios.post(`${config.apiUrl}/api/auth/logout`, {}, {
+        withCredentials: true,
+      });
+      
       router.push("/");
     }
   };
@@ -57,7 +67,7 @@ export default function TopNav() {
             <div className="flex items-center gap-4 h-10">
               <div className="flex items-center text-gray-300 font-medium gap-2 h-full">
                 <i className="fas fa-user text-purple-400" />
-                <span>{name}</span>
+                <span onClick={() => router.push("/profile")} className="cursor-pointer hover:underline">{name}</span>
               </div>
               <button className="btn-primary h-full mb-6" onClick={handleLogout}>
                 <i className="fas fa-sign-out-alt mr-2"></i>

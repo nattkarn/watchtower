@@ -25,28 +25,36 @@ export default function Login() {
       Swal.fire("กรอกข้อมูลให้ครบ", "", "warning");
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
-      const payload = {
-        username,
-        password,
-      };
+      const payload = { username, password };
       const response = await axios.post(
         `${config.apiUrl}/api/auth/login`,
-        payload
+        payload,
+        { withCredentials: true }
       );
-      if (response.data.token !== undefined) {
-        const token = response.data.token;
+  
+      const { token, level, username: name, message, httpStatus } = response.data;
+  
+      // 👉 กรณีบัญชียังไม่เปิดใช้งาน
+      if (message === "User not active") {
+        Swal.fire("บัญชีนี้ยังไม่ถูกเปิดใช้งาน", "กรุณายืนยันการเปิดใช้งานผ่านอีเมล", "warning");
+        return;
+      }
+  
+      // 👉 กรณีเข้าสู่ระบบสำเร็จ
+      if (token) {
         localStorage.setItem("watchtower_user_token", token);
-        localStorage.setItem("watchtower_user_name", username);
+        localStorage.setItem("watchtower_user_name", name);
+        localStorage.setItem("watchtower_user_level", level);
         router.push("/dashboard");
       } else {
         Swal.fire("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "", "error");
       }
-    } catch (error) {
-      Swal.fire("เกิดข้อผิดพลาด", "", "error");
+    } catch (error: any) {
+      Swal.fire("เกิดข้อผิดพลาด", error?.response?.data?.message || "", "error");
     } finally {
       setIsLoading(false);
     }

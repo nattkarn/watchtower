@@ -10,6 +10,11 @@ export default function Sidebar() {
       icon: 'fa-solid fa-gauge-high',
     },
     {
+      title: 'จัดการผู้ใช้',
+      href: '/user',
+      icon: 'fa-solid fa-user',
+    },
+    {
       title: 'ติดตาม URL',
       href: '/urls',
       icon: 'fa-solid fa-link',
