@@ -19,6 +19,12 @@ export default function Dashboard() {
   const [label, setLabel] = useState("");
   const [sslExpireDate, setSslExpireDate] = useState("");
 
+  // Export CSV modal state
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [useDateFilter, setUseDateFilter] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
   useEffect(() => {
     const level = localStorage.getItem("watchtower_user_level");
     setUserLevel(level);
@@ -88,6 +94,37 @@ export default function Dashboard() {
     setIsModalOpen(false);
   };
 
+  const handleExportCsv = async () => {
+    try {
+      const url = useDateFilter
+        ? `${config.apiUrl}/api/report/export-csv-date`
+        : `${config.apiUrl}/api/report/export-csv`;
+
+      const payload = useDateFilter ? { fromDate, toDate } : {};
+
+      const res = await axios.post(url, payload, {
+        responseType: "blob",
+        withCredentials: true,
+      });
+
+      const blob = new Blob([res.data], { type: "text/csv" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = "url_report.csv";
+      a.click();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setIsExportModalOpen(false);
+      setUseDateFilter(false);
+      setFromDate("");
+      setToDate("");
+    } catch (error) {
+      console.error("❌ Error exporting CSV:", error);
+      alert("ไม่สามารถ Export ได้");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <TopNav />
@@ -121,12 +158,20 @@ export default function Dashboard() {
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-xl font-semibold">🔔 รายการ URL</h2>
               {userLevel === "admin" && (
-                <button
-                  className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 text-sm"
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  ➕ เพิ่ม URL
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 text-sm"
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    ➕ เพิ่ม URL
+                  </button>
+                  <button
+                    className="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 text-sm"
+                    onClick={() => setIsExportModalOpen(true)}
+                  >
+                    📥 Export CSV
+                  </button>
+                </div>
               )}
             </div>
             <table className="w-full text-sm text-left">
@@ -145,11 +190,14 @@ export default function Dashboard() {
                   const daysLeft = item.sslExpireDate
                     ? differenceInDays(parseISO(item.sslExpireDate), new Date())
                     : null;
-                  const statusColor = item.status === "down" ? "bg-red-500" : "bg-green-500";
+                  const statusColor =
+                    item.status === "down" ? "bg-red-500" : "bg-green-500";
                   return (
                     <tr key={i} className="border-b border-gray-800">
                       <td className="py-2">
-                        <span className={`inline-block w-3 h-3 rounded-full ${statusColor}`}></span>
+                        <span
+                          className={`inline-block w-3 h-3 rounded-full ${statusColor}`}
+                        ></span>
                       </td>
                       <td className="py-2">
                         <a
@@ -164,7 +212,10 @@ export default function Dashboard() {
                       <td className="py-2">{item.label}</td>
                       <td className="py-2">
                         {item.sslExpireDate
-                          ? `${daysLeft} วัน (${item.sslExpireDate.slice(0, 10)})`
+                          ? `${daysLeft} วัน (${item.sslExpireDate.slice(
+                              0,
+                              10
+                            )})`
                           : "—"}
                       </td>
                       <td className="py-2">
@@ -180,7 +231,9 @@ export default function Dashboard() {
                             setEditId(item.id);
                             setLabel(item.label);
                             setNewUrl(item.url);
-                            setSslExpireDate(item.sslExpireDate?.slice(0, 10) || "");
+                            setSslExpireDate(
+                              item.sslExpireDate?.slice(0, 10) || ""
+                            );
                             setIsModalOpen(true);
                           }}
                         >
@@ -197,6 +250,7 @@ export default function Dashboard() {
       </div>
       <Footer />
 
+      {/* Modal: เพิ่ม/แก้ไข URL */}
       <Modal
         title={isEditing ? "✏️ แก้ไข URL" : "➕ เพิ่ม URL"}
         isOpen={isModalOpen}
@@ -237,6 +291,55 @@ export default function Dashboard() {
             {isEditing ? "อัปเดต" : "บันทึก"}
           </button>
         </form>
+      </Modal>
+
+      {/* Modal: Export CSV */}
+      <Modal
+        title="📤 Export URL Report"
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      >
+        <div className="space-y-4">
+          <label className="flex items-center space-x-2 text-gray-300">
+            <input
+              type="checkbox"
+              checked={useDateFilter}
+              onChange={(e) => setUseDateFilter(e.target.checked)}
+            />
+            <span>กรองด้วยช่วงวันที่</span>
+          </label>
+
+          {useDateFilter && (
+            <>
+              <div>
+                <label className="block text-gray-300 mb-1">จากวันที่</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-300 mb-1">ถึงวันที่</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                />
+              </div>
+            </>
+          )}
+
+          <button
+            className="btn-primary w-full"
+            onClick={handleExportCsv}
+            disabled={useDateFilter && (!fromDate || !toDate)}
+          >
+            📤 ยืนยัน Export
+          </button>
+        </div>
       </Modal>
     </div>
   );

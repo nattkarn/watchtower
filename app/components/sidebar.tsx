@@ -14,21 +14,21 @@ export default function Sidebar() {
       href: '/user',
       icon: 'fa-solid fa-user',
     },
-    {
-      title: 'ติดตาม URL',
-      href: '/urls',
-      icon: 'fa-solid fa-link',
-    },
-    {
-      title: 'ประวัติการแจ้งเตือน',
-      href: '/logs',
-      icon: 'fa-solid fa-bell',
-    },
-    {
-      title: 'ตั้งค่า',
-      href: '/settings',
-      icon: 'fa-solid fa-gear',
-    },
+    // {
+    //   title: 'ติดตาม URL',
+    //   href: '/urls',
+    //   icon: 'fa-solid fa-link',
+    // },
+    // {
+    //   title: 'ประวัติการแจ้งเตือน',
+    //   href: '/logs',
+    //   icon: 'fa-solid fa-bell',
+    // },
+    // {
+    //   title: 'ตั้งค่า',
+    //   href: '/settings',
+    //   icon: 'fa-solid fa-gear',
+    // },
   ];
 
   return (
