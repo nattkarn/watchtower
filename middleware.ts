@@ -9,6 +9,10 @@ export function middleware(request: NextRequest) {
   // console.log("🧭 Pathname:", pathname);
 
   const level = request.cookies.get("watchtower_user_level")?.value;
+
+
+
+  
   // console.log("🔍 Level:", level);
 
   // ✅ เงื่อนไขตรวจ path แบบละเอียด

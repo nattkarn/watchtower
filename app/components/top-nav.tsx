@@ -12,6 +12,7 @@ export default function TopNav() {
   const router = useRouter();
 
   useEffect(() => {
+
     const storedName = localStorage.getItem("watchtower_user_name");
     if (!storedName) {
       router.push("/");
