@@ -1,17 +1,45 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import axios from 'axios';
+import { config } from '../app/config';
+import { differenceInDays, parseISO } from 'date-fns';
 
 export default function Home() {
   const router = useRouter();
+
+  const [urls, setUrls] = useState<any[]>([]);
+
+  // 👉 คำนวณจาก urls ไม่ต้องสร้าง state เพิ่ม
+  const totalUrls = urls.length;
+  const errorUrlsCount = urls.filter((u) => u.status === 'inactive').length;
+  const expiringSSLCount = urls.filter((u) => {
+    if (!u.sslExpireDate) return false;
+    const daysLeft = differenceInDays(parseISO(u.sslExpireDate), new Date());
+    return daysLeft <= 15;
+  }).length;
 
   useEffect(() => {
     const token = localStorage.getItem('watchtower_user_token');
     if (token) {
       router.push('/dashboard');
+      return;
     }
+
+    const fetchUrls = async () => {
+      try {
+        const response = await axios.get(`${config.apiUrl}/api/monitor/homepage-url`, {
+          withCredentials: true,
+        });
+        setUrls(response.data);
+      } catch (error) {
+        console.error('Error fetching URL data:', error);
+      }
+    };
+
+    fetchUrls();
   }, [router]);
 
   return (
@@ -32,7 +60,7 @@ export default function Home() {
         />
 
         <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-wide">
-        Welcome to Watchtower
+          Welcome to Watchtower
         </h1>
         <p className="text-gray-400 text-lg mb-8">
           ระบบเฝ้าระวังสถานะเว็บไซต์และใบรับรอง SSL <br /> สำหรับนักพัฒนาและ DevOps โดยเฉพาะ
@@ -44,11 +72,13 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
         >
-          <p className="text-sm text-indigo-400 mb-1 font-bold uppercase">สถานะระบบเบื้องต้น</p>
+          <p className="text-sm text-indigo-400 mb-1 font-bold uppercase">
+            สถานะระบบเบื้องต้น
+          </p>
           <ul className="text-sm space-y-1 text-gray-300">
-            <li>🔗 URLs ทั้งหมด: 12</li>
-            <li>❌ URLs ผิดพลาด: 1</li>
-            <li>📅 SSL ใกล้หมดอายุ: 2 รายการ</li>
+            <li>🔗 URLs ทั้งหมด: {totalUrls}</li>
+            <li>❌ URLs ผิดพลาด: {errorUrlsCount}</li>
+            <li>📅 SSL ใกล้หมดอายุ: {expiringSSLCount}</li>
           </ul>
         </motion.div>
 
