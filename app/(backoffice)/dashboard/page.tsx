@@ -44,7 +44,7 @@ export default function Dashboard() {
   };
 
   const totalUrls = urls.length;
-  const errorUrls = urls.filter((u) => u.status === "down").length;
+  const errorUrls = urls.filter((u) => u.status === "inactive").length;
   const expiringSSL = urls.filter((u) => {
     if (!u.sslExpireDate) return false;
     const daysLeft = differenceInDays(parseISO(u.sslExpireDate), new Date());
@@ -218,7 +218,7 @@ export default function Dashboard() {
                     ? differenceInDays(parseISO(item.sslExpireDate), new Date())
                     : null;
                   const statusColor =
-                    item.status === "down" ? "bg-red-500" : "bg-green-500";
+                    item.status === "inactive" ? "bg-red-500" : "bg-green-500";
                   return (
                     <tr key={i} className="border-b border-gray-800">
                       <td className="py-2">
