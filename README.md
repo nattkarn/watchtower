@@ -17,7 +17,7 @@ It provides real-time status checks, SSL expiry tracking, automated alerts, and 
 | Layer       | Technology            |
 |-------------|------------------------|
 | Frontend    | [Next.js 14](https://nextjs.org/) (App Router, TypeScript) |
-| Backend     | [NestJS](https://github.com/nattkarn/watchtower-api) |
+| Backend     | [Watchtower-api](https://github.com/nattkarn/watchtower-api) |
 | Database    | [PostgreSQL on Neon](https://neon.tech/) |
 | ORM         | [Prisma](https://www.prisma.io/) |
 | Notification| Email (Nodemailer) |
