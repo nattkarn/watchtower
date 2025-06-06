@@ -8,6 +8,7 @@ import Footer from "../../components/footer";
 import Modal from "../../components/modal";
 import { config } from "../../config";
 import { differenceInDays, parseISO } from "date-fns";
+import Swal from "sweetalert2";
 
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,7 +44,7 @@ export default function Dashboard() {
   };
 
   const totalUrls = urls.length;
-  const errorUrls = urls.filter((u) => u.status === "down").length;
+  const errorUrls = urls.filter((u) => u.status === "inactive").length;
   const expiringSSL = urls.filter((u) => {
     if (!u.sslExpireDate) return false;
     const daysLeft = differenceInDays(parseISO(u.sslExpireDate), new Date());
@@ -125,6 +126,26 @@ export default function Dashboard() {
     }
   };
 
+  const handleManualCheck = async () => {
+    try {
+      const res = await axios.post(
+        `${config.apiUrl}/api/scheduler/manual-check`,
+        {},
+        { withCredentials: true }
+      );
+      Swal.fire("✅ Manual health check started. Refreshing data...");
+
+      // ⭐ Wait a bit → ให้ DB update เสร็จก่อน
+      await new Promise((resolve) => setTimeout(resolve, 1500)); // 1.5 sec
+  
+      // ⭐ Refresh URL list
+      await fetchUrls();
+    } catch (error) {
+      console.error("❌ Error running manual health check:", error);
+      Swal.fire("❌ ไม่สามารถเริ่ม Manual Health Check ได้");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <TopNav />
@@ -171,6 +192,12 @@ export default function Dashboard() {
                   >
                     📥 Export CSV
                   </button>
+                  <button
+                    className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 text-sm"
+                    onClick={handleManualCheck}
+                  >
+                    🔄 Refresh (Manual Check)
+                  </button>
                 </div>
               )}
             </div>
@@ -191,7 +218,7 @@ export default function Dashboard() {
                     ? differenceInDays(parseISO(item.sslExpireDate), new Date())
                     : null;
                   const statusColor =
-                    item.status === "down" ? "bg-red-500" : "bg-green-500";
+                    item.status === "inactive" ? "bg-red-500" : "bg-green-500";
                   return (
                     <tr key={i} className="border-b border-gray-800">
                       <td className="py-2">
