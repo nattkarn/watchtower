@@ -36,7 +36,7 @@ export default function Login() {
         { withCredentials: true }
       );
   
-      const { token, level, username: name, message, httpStatus } = response.data;
+      const { token, role, username: name, message, httpStatus } = response.data;
   
       // 👉 กรณีบัญชียังไม่เปิดใช้งาน
       if (message === "User not active") {
@@ -48,7 +48,7 @@ export default function Login() {
       if (token) {
         localStorage.setItem("watchtower_user_token", token);
         localStorage.setItem("watchtower_user_name", name);
-        localStorage.setItem("watchtower_user_level", level);
+        localStorage.setItem("watchtower_user_level", role);
         router.push("/dashboard");
       } else {
         Swal.fire("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "", "error");

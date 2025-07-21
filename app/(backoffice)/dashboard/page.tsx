@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import TopNav from "../../components/top-nav";
 import Sidebar from "../../components/sidebar";
 import Footer from "../../components/footer";
 import Modal from "../../components/modal";
-import { config } from "../../config";
+import api from "../../util/AxiosInstance";
 import { differenceInDays, parseISO } from "date-fns";
 import Swal from "sweetalert2";
 
@@ -28,18 +27,28 @@ export default function Dashboard() {
 
   useEffect(() => {
     const level = localStorage.getItem("watchtower_user_level");
+    console.log("level", level);
     setUserLevel(level);
     fetchUrls();
   }, []);
 
   const fetchUrls = async () => {
     try {
-      const res = await axios.get(`${config.apiUrl}/api/monitor/get-all-url`, {
+      const res = await api.get(`/monitor/get-all-url`, {
         withCredentials: true,
       });
       setUrls(res.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Error fetching URL data:", error);
+      Swal.fire({
+        title: `Error fetching URL data: ${
+          error.response?.data?.message || error.message
+        }`,
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
     }
   };
 
@@ -55,8 +64,8 @@ export default function Dashboard() {
     e.preventDefault();
     try {
       if (isEditing && editId !== null) {
-        await axios.patch(
-          `${config.apiUrl}/api/monitor/update-url/${editId}`,
+        await api.patch(
+          `/monitor/update-url/${editId}`,
           {
             url: newUrl,
             label,
@@ -65,8 +74,8 @@ export default function Dashboard() {
           { withCredentials: true }
         );
       } else {
-        await axios.post(
-          `${config.apiUrl}/api/monitor/create-url`,
+        await api.post(
+          `/monitor/create-url`,
           {
             url: newUrl,
             label,
@@ -98,12 +107,12 @@ export default function Dashboard() {
   const handleExportCsv = async () => {
     try {
       const url = useDateFilter
-        ? `${config.apiUrl}/api/report/export-csv-date`
-        : `${config.apiUrl}/api/report/export-csv`;
+        ? `/report/export-csv-date`
+        : `/report/export-csv`;
 
       const payload = useDateFilter ? { fromDate, toDate } : {};
 
-      const res = await axios.post(url, payload, {
+      const res = await api.post(url, payload, {
         responseType: "blob",
         withCredentials: true,
       });
@@ -128,21 +137,33 @@ export default function Dashboard() {
 
   const handleManualCheck = async () => {
     try {
-      const res = await axios.post(
-        `${config.apiUrl}/api/scheduler/manual-check`,
+      await api.post(
+        `/scheduler/manual-check`,
         {},
         { withCredentials: true }
       );
-      Swal.fire("✅ Manual health check started. Refreshing data...");
+      Swal.fire({
+        title: "✅ Manual health check started. Refreshing data...",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
 
       // ⭐ Wait a bit → ให้ DB update เสร็จก่อน
       await new Promise((resolve) => setTimeout(resolve, 1500)); // 1.5 sec
-  
+
       // ⭐ Refresh URL list
       await fetchUrls();
     } catch (error) {
       console.error("❌ Error running manual health check:", error);
-      Swal.fire("❌ ไม่สามารถเริ่ม Manual Health Check ได้");
+      Swal.fire({
+        title: "❌ ไม่สามารถเริ่ม Manual Health Check ได้",
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
     }
   };
 
@@ -178,7 +199,7 @@ export default function Dashboard() {
           <div className="card mb-6 overflow-x-auto">
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-xl font-semibold">🔔 รายการ URL</h2>
-              {userLevel === "admin" && (
+              {userLevel === "ADMIN" && (
                 <div className="flex space-x-2">
                   <button
                     className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 text-sm"

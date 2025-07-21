@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
   // ✅ เงื่อนไขตรวจ path แบบละเอียด
   if (pathname.startsWith("/user")) {
     // console.log("✅ Path '/user' is admin-only");
-    if (level !== "admin") {
+    if (level !== "ADMIN") {
       // console.log("🚫 Redirecting to /unauthorized (user not admin)");
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }

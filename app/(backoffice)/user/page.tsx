@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import TopNav from '@/app/components/top-nav';
-import Sidebar from '@/app/components/sidebar';
-import Footer from '@/app/components/footer';
-import Modal from '@/app/components/modal';
-import { config } from '@/app/config';
+import { useState, useEffect } from "react";
+import TopNav from "@/app/components/top-nav";
+import Sidebar from "@/app/components/sidebar";
+import Footer from "@/app/components/footer";
+import Modal from "@/app/components/modal";
+import api from "@/app/util/AxiosInstance";
+import Swal from "sweetalert2";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [tel, setTel] = useState('');
-  const [line, setLine] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [level, setLevel] = useState('user');
-  const [status, setStatus] = useState('active');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [tel, setTel] = useState("");
+  const [line, setLine] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setrole] = useState("user");
+  const [status, setStatus] = useState("active");
   const [id, setId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -26,42 +26,57 @@ export default function UserManagementPage() {
   }, []);
 
   const fetchUsers = async () => {
-    const res = await axios.get(`${config.apiUrl}/api/user`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("watchtower_user_token")}`,
-      },
-    });
-    setUsers(res.data);
+    try {
+      const res = await api.get(`/user`, {
+        withCredentials: true,
+      });
+
+      setUsers(res.data);
+      // console.log(res.data);
+    } catch (error: any) {
+      Swal.fire({
+        title: error.response?.data?.message || error.message,
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
+    }
   };
 
   const handleSave = async () => {
     if (password !== confirmPassword) {
-      alert('Password และ Confirm Password ไม่ตรงกัน');
+      Swal.fire({
+        title: "Password และ Confirm Password ไม่ตรงกัน",
+        icon: "warning",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
       return;
     }
 
     const payload: any = {
-        username,
-        email,
-        tel: tel,
-        line: line,
-        level,
-        status
-      };
-    
-      if (password && password.trim() !== '') {
-        payload.password = password;
-      }
+      username,
+      email,
+      tel: tel,
+      line: line,
+      role,
+      status,
+    };
+    console.log('payload', payload);
+
+    if (password && password.trim() !== "") {
+      payload.password = password;
+    }
 
     try {
       if (id === null) {
-        await axios.post(`${config.apiUrl}/api/user/signup`, payload);
+        await api.post(`/user/signup`, payload);
       } else {
         // console.log('update user', payload.password);
-        await axios.patch(`${config.apiUrl}/api/user/update-user/${id}`, payload, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("watchtower_user_token")}`,
-          },
+        await api.patch(`/user/update-user/${id}`, payload, {
+          withCredentials: true,
         });
       }
 
@@ -69,55 +84,63 @@ export default function UserManagementPage() {
       resetForm();
       setShowModal(false);
     } catch (error: any) {
-      alert(error.response?.data?.message || error.message);
+      Swal.fire({
+        title: error.response?.data?.message || error.message,
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
     }
   };
 
   const handleEdit = async (user: any) => {
     try {
-      const res = await axios.get(`${config.apiUrl}/api/user/find-user/${user.username}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("watchtower_user_token")}`,
-        },
+      const res = await api.get(`/user/find-user/${user.username}`, {
+        withCredentials: true,
       });
-  
+
       const fetchedUser = res.data.data;
-  
+
       setId(fetchedUser.id);
       setUsername(fetchedUser.username);
-      setEmail(fetchedUser.email || '');
-      setTel(fetchedUser.tel || '');
-      setLine(fetchedUser.line || '');
-      setLevel(fetchedUser.level);
+      setEmail(fetchedUser.email || "");
+      setTel(fetchedUser.tel || "");
+      setLine(fetchedUser.line || "");
+      setrole(fetchedUser.role);
       setStatus(fetchedUser.status);
-      setPassword('');
-      setConfirmPassword('');
+      setPassword("");
+      setConfirmPassword("");
       setShowModal(true);
     } catch (error: any) {
-      alert('ไม่สามารถโหลดข้อมูลผู้ใช้ได้: ' + (error.response?.data?.message || error.message));
+      Swal.fire({
+        title: error.response?.data?.message || error.message,
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
     }
   };
   const handleDelete = async (id: number) => {
-    if (!confirm('ต้องการลบผู้ใช้นี้หรือไม่')) return;
+    if (!confirm("ต้องการลบผู้ใช้นี้หรือไม่")) return;
 
-    await axios.delete(`${config.apiUrl}/api/user/delete-user/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("watchtower_user_token")}`,
-      },
+    await api.delete(`/user/delete-user/${id}`, {
+      withCredentials: true,
     });
     fetchUsers();
   };
 
   const resetForm = () => {
     setId(null);
-    setUsername('');
-    setEmail('');
-    setTel('');
-    setLine('');
-    setPassword('');
-    setConfirmPassword('');
-    setLevel('user');
-    setStatus('active');
+    setUsername("");
+    setEmail("");
+    setTel("");
+    setLine("");
+    setPassword("");
+    setConfirmPassword("");
+    setrole("USER");
+    setStatus("INACTIVE");
   };
 
   return (
@@ -146,7 +169,7 @@ export default function UserManagementPage() {
                 <th className="px-4 py-2">Email</th>
                 <th className="px-4 py-2">Phone</th>
                 <th className="px-4 py-2">LINE ID</th>
-                <th className="px-4 py-2">Level</th>
+                <th className="px-4 py-2">Role</th>
                 <th className="px-4 py-2">Status</th>
                 <th className="px-4 py-2">จัดการผู้ใช้</th>
               </tr>
@@ -158,7 +181,7 @@ export default function UserManagementPage() {
                   <td className="px-4 py-2">{user.email}</td>
                   <td className="px-4 py-2">{user.tel}</td>
                   <td className="px-4 py-2">{user.line}</td>
-                  <td className="px-4 py-2">{user.level}</td>
+                  <td className="px-4 py-2">{user.role.name}</td>
                   <td className="px-4 py-2">{user.status}</td>
                   <td className="px-4 py-2">
                     <button
@@ -179,10 +202,16 @@ export default function UserManagementPage() {
             </tbody>
           </table>
 
-          <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="เพิ่ม/แก้ไขผู้ใช้">
+          <Modal
+            isOpen={showModal}
+            onClose={() => setShowModal(false)}
+            title="เพิ่ม/แก้ไขผู้ใช้"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Username</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  Username
+                </label>
                 <input
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
                   value={username}
@@ -191,7 +220,9 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Email</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  Email
+                </label>
                 <input
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
                   value={email}
@@ -200,7 +231,9 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Phone</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  Phone
+                </label>
                 <input
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
                   value={tel}
@@ -209,7 +242,9 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">LINE ID</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  LINE ID
+                </label>
                 <input
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
                   value={line}
@@ -218,7 +253,9 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Password</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  Password
+                </label>
                 <input
                   type="password"
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
@@ -228,7 +265,9 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Confirm Password</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  Confirm Password
+                </label>
                 <input
                   type="password"
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
@@ -238,26 +277,30 @@ export default function UserManagementPage() {
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Level</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  Role
+                </label>
                 <select
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
+                  value={role}
+                  onChange={(e) => setrole(e.target.value)}
                 >
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
+                  <option value="USER">USER</option>
+                  <option value="ADMIN">ADMIN</option>
                 </select>
               </div>
 
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">Status</label>
+                <label className="block mb-1 text-sm font-medium text-gray-300">
+                  Status
+                </label>
                 <select
                   className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                 >
-                  <option value="active">active</option>
-                  <option value="inactive">inactive</option>
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="INACTIVE">INACTIVE</option>
                 </select>
               </div>
 

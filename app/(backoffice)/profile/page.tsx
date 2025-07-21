@@ -1,29 +1,28 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import { config } from '@/app/config';
-import TopNav from '@/app/components/top-nav';
-import Sidebar from '@/app/components/sidebar';
-import Footer from '@/app/components/footer';
-import Modal from '@/app/components/modal';
-import Swal from 'sweetalert2';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import TopNav from "@/app/components/top-nav";
+import Sidebar from "@/app/components/sidebar";
+import Footer from "@/app/components/footer";
+import Modal from "@/app/components/modal";
+import Swal from "sweetalert2";
+import api from "@/app/util/AxiosInstance";
 
 export default function UserProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [editPhone, setEditPhone] = useState('');
-  const [editLine, setEditLine] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [editPhone, setEditPhone] = useState("");
+  const [editLine, setEditLine] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('watchtower_user_token');
+    const token = localStorage.getItem("watchtower_user_token");
     if (!token) {
-      router.push('/');
+      router.push("/");
       return;
     }
 
@@ -32,66 +31,107 @@ export default function UserProfilePage() {
 
   const fetchUserProfile = async () => {
     try {
-      const res = await axios.post(
-        `${config.apiUrl}/api/user/user-info`,
+      const res = await api.post(
+        `/user/user-info`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('watchtower_user_token')}`,
-          },
+          withCredentials: true,
         }
       );
 
       setUser(res.data.data);
     } catch (error: any) {
-      alert('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
+      
+      Swal.fire({
+        title: `ไม่สามารถโหลดข้อมูลผู้ใช้ได้ ${error.response?.data?.message || error.message}`,
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
     }
   };
 
   const handleUpdateContact = async () => {
     try {
-      await axios.patch(
-        `${config.apiUrl}/api/user/update-contract/${user.id}`,
+      await api.patch(
+        `/user/update-contract/${user.id}`,
         {
           tel: editPhone,
           line: editLine,
         },
         {
-          withCredentials: true
+          withCredentials: true,
         }
       );
-      Swal.fire('อัปเดตข้อมูลติดต่อสำเร็จ', '', 'success');
+      Swal.fire({
+        title: "อัปเดตข้อมูลติดต่อสำเร็จ",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
       setShowContactModal(false);
       fetchUserProfile();
     } catch (error: any) {
-      Swal.fire('เกิดข้อผิดพลาด', error.response?.data?.message || error.message, 'error');
+      Swal.fire({
+        title: `${error.response?.data?.message || error.message}`,
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
     }
   };
 
   const handleChangePassword = async () => {
     if (!newPassword || !confirmPassword) {
-      Swal.fire('กรุณากรอกรหัสผ่านให้ครบ', '', 'warning');
+      Swal.fire({
+        title: "กรุณากรอกรหัสผ่านให้ครบ",
+        icon: "warning",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
       return;
     }
     if (newPassword !== confirmPassword) {
-      alert('Password และ Confirm Password ไม่ตรงกัน');
+      Swal.fire({
+        title: "Password และ Confirm Password ไม่ตรงกัน",
+        icon: "warning",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
       return;
     }
 
     try {
-      await axios.patch(
-        `${config.apiUrl}/api/user/change-password`,
+      await api.patch(
+        `/user/change-password`,
         { password: newPassword },
         {
-          withCredentials: true
+          withCredentials: true,
         }
       );
-      alert('เปลี่ยนรหัสผ่านสำเร็จ');
+      Swal.fire({
+        title: "เปลี่ยนรหัสผ่านสำเร็จ",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
       setShowPasswordModal(false);
-      setNewPassword('');
-      setConfirmPassword('');
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error: any) {
-      alert(error.response?.data?.message || error.message);
+      Swal.fire({
+        title: error.response?.data?.message || error.message,
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      });
     }
   };
 
@@ -129,25 +169,25 @@ export default function UserProfilePage() {
 
             <div>
               <label className="text-gray-400">เบอร์โทรศัพท์</label>
-              <p className="text-lg">{user.tel || '-'}</p>
+              <p className="text-lg">{user.tel || "-"}</p>
             </div>
 
             <div>
               <label className="text-gray-400">LINE ID</label>
-              <p className="text-lg">{user.line || '-'}</p>
+              <p className="text-lg">{user.line || "-"}</p>
             </div>
 
             <div>
               <label className="text-gray-400">Email</label>
-              <p className="text-lg">{user.email || '-'}</p>
+              <p className="text-lg">{user.email || "-"}</p>
             </div>
           </div>
 
           <div className="mt-6 flex gap-4">
             <button
               onClick={() => {
-                setEditPhone(user.tel || '');
-                setEditLine(user.line || '');
+                setEditPhone(user.tel || "");
+                setEditLine(user.line || "");
                 setShowContactModal(true);
               }}
               className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-4 py-2 rounded-lg"
@@ -173,7 +213,9 @@ export default function UserProfilePage() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-300">Phone</label>
+            <label className="block mb-1 text-sm font-medium text-gray-300">
+              Phone
+            </label>
             <input
               className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
               value={editPhone}
@@ -182,7 +224,9 @@ export default function UserProfilePage() {
           </div>
 
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-300">LINE ID</label>
+            <label className="block mb-1 text-sm font-medium text-gray-300">
+              LINE ID
+            </label>
             <input
               className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
               value={editLine}
@@ -209,7 +253,9 @@ export default function UserProfilePage() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-300">Password</label>
+            <label className="block mb-1 text-sm font-medium text-gray-300">
+              Password
+            </label>
             <input
               type="password"
               className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
@@ -219,7 +265,9 @@ export default function UserProfilePage() {
           </div>
 
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-300">Confirm Password</label>
+            <label className="block mb-1 text-sm font-medium text-gray-300">
+              Confirm Password
+            </label>
             <input
               type="password"
               className="w-full rounded-lg border border-gray-700 bg-gray-800 text-white p-2"
