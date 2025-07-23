@@ -30,6 +30,8 @@ export default function Home() {
 
     const fetchUrls = async () => {
       try {
+
+        console.log('apiUrl',config.apiUrl);
         const response = await axios.get(`${config.apiUrl}/api/monitor/homepage-url`, {
           withCredentials: true,
         });
