@@ -137,11 +137,7 @@ export default function Dashboard() {
 
   const handleManualCheck = async () => {
     try {
-      await api.post(
-        `/scheduler/manual-check`,
-        {},
-        { withCredentials: true }
-      );
+      await api.post(`/scheduler/manual-check`, {}, { withCredentials: true });
       Swal.fire({
         title: "✅ Manual health check started. Refreshing data...",
         icon: "success",
@@ -273,6 +269,8 @@ export default function Dashboard() {
                       </td>
                       <td className="py-2 space-x-2">
                         <button
+                          disabled={userLevel !== "ADMIN"}
+                          hidden={userLevel !== "ADMIN"}
                           className="text-blue-400 hover:underline"
                           onClick={() => {
                             setIsEditing(true);
