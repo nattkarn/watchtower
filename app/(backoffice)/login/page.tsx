@@ -13,7 +13,7 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("watchtower_user_token");
+    const token = localStorage.getItem("watchtower_user_refreshToken");
     if (token) {
       router.push("/dashboard");
     }
@@ -36,7 +36,7 @@ export default function Login() {
         { withCredentials: true }
       );
   
-      const { token, role, username: name, message, httpStatus } = response.data;
+      const { token, role, username: name, message, httpStatus, refreshToken } = response.data;
   
       // 👉 กรณีบัญชียังไม่เปิดใช้งาน
       if (message === "User not active") {
@@ -46,9 +46,9 @@ export default function Login() {
   
       // 👉 กรณีเข้าสู่ระบบสำเร็จ
       if (token) {
-        localStorage.setItem("watchtower_user_token", token);
         localStorage.setItem("watchtower_user_name", name);
         localStorage.setItem("watchtower_user_level", role);
+        localStorage.setItem("watchtower_user_refreshToken", refreshToken);
         router.push("/dashboard");
       } else {
         Swal.fire("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "", "error");

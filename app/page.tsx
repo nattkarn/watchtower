@@ -22,7 +22,7 @@ export default function Home() {
   }).length;
 
   useEffect(() => {
-    const token = localStorage.getItem('watchtower_user_token');
+    const token = localStorage.getItem('watchtower_user_refreshToken');
     if (token) {
       router.push('/dashboard');
       return;
@@ -33,7 +33,6 @@ export default function Home() {
 
         console.log('apiUrl',config.apiUrl);
         const response = await axios.get(`${config.apiUrl}/api/monitor/homepage-url`, {
-          withCredentials: true,
         });
         setUrls(response.data);
       } catch (error) {

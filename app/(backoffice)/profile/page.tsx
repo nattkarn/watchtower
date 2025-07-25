@@ -20,7 +20,7 @@ export default function UserProfilePage() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("watchtower_user_token");
+    const token = localStorage.getItem("watchtower_user_refreshToken");
     if (!token) {
       router.push("/");
       return;

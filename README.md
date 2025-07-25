@@ -44,8 +44,8 @@ It provides real-time status checks, SSL expiry tracking, automated alerts, and 
 ## 📅 Roadmap
 
 - [x] Project Initialization
-- [ ] Core Setup: Auth, DB, Prisma
-- [ ] URL Monitor + SSL Checker
-- [ ] Notification system
-- [ ] Export feature
-- [ ] UI/UX polish and deploy
+- [x] Core Setup: Auth, DB, Prisma
+- [x] URL Monitor + SSL Checker
+- [x] Notification system
+- [x] Export feature
+- [x] UI/UX polish and deploy

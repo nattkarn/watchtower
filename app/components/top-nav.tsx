@@ -13,15 +13,43 @@ export default function TopNav() {
 
   useEffect(() => {
 
-    const storedName = localStorage.getItem("watchtower_user_name");
-    if (!storedName) {
-      router.push("/");
-    }
-    setName(storedName || "");
+    const verifyAuth = async () => {
+      try {
+        const storedName = localStorage.getItem("watchtower_user_name");
+        if (!storedName) {
+          router.push("/");
+          return;
+        }
+  
+        const res = await axios.post(`${config.apiUrl}/api/auth/verify-token`, {token: localStorage.getItem("watchtower_user_refreshToken")}, {
+          withCredentials: true,
+        });
+  
+        if (res) {
+          setName(storedName);
+        } else {
+          throw new Error("Token invalid");
+        }
+  
+      } catch (err) {
+        console.error("Error verifying token:", err);
+        localStorage.clear();
+        document.cookie = "watchtower_user_level=; max-age=0; path=/";
+        document.cookie = "watchtower_user_name=; max-age=0; path=/";
+        document.cookie = "watchtower_user_token=; max-age=0; path=/";
+        document.cookie = "watchtower_user_refreshToken=; max-age=0; path=/";
+        router.push("/");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    verifyAuth();
 
     setTimeout(() => setIsLoading(false), 500); // ลดเวลา load
   }, []);
-
+ 
+  
   const handleLogout = async () => {
     const result = await Swal.fire({
       title: "คุณแน่ใจหรือไม่?",
@@ -40,6 +68,7 @@ export default function TopNav() {
       document.cookie = "watchtower_user_level=; max-age=0; path=/";
       document.cookie = "watchtower_user_name=; max-age=0; path=/";
       document.cookie = "watchtower_user_token=; max-age=0; path=/";
+      document.cookie = "watchtower_user_refreshToken=; max-age=0; path=/";
       await axios.post(`${config.apiUrl}/api/auth/logout`, {}, {
         withCredentials: true,
       });
